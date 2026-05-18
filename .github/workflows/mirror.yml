@@ -1,0 +1,42 @@
+name: Git Mirror
+
+on:
+  workflow_call:
+    inputs:
+      target_repo:
+        required: true
+        type: string
+    secrets:
+      api_token:
+        required: true
+
+jobs:
+  run-mirror:
+    runs-on: ubuntu-latest
+    steps:
+    - name: 📑 Checkout Source Code
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+
+    - name: 🚀 Push to Destination Mirror
+      run: |
+        git config --global user.name "github-actions-gpop3"
+        git config --global user.email "github-actions-gpop3@users.noreply.github.com"
+        
+        if [ -f "README.md" ]; then
+          echo "📝 README.md trouvé, ajout de la mention miroir avec avertissement infrastructure..."
+          NOTICE="> ⚠️ **Note :** Ceci est un miroir public et en lecture seule du dépôt privé original. Pour des raisons de sécurité et afin d'éviter tout accès malveillant aux runners privés, les modifications et Pull Requests doivent être soumises uniquement sur le dépôt source.\n\n"
+          
+          echo -e "$NOTICE$(cat README.md)" > README.md
+        
+          git add README.md
+          git commit -m "docs: add mirror and infrastructure notice to README"
+        else
+          echo "ℹ️ Aucun README.md trouvé, étape ignorée."
+        fi
+                
+        git remote add target https://x-access-token:${{ secrets.api_token }}@github.com/${{ inputs.target_repo }}.git
+        
+        git push -f target HEAD:refs/heads/main

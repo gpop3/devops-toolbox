@@ -1,0 +1,5 @@
+# Ignorer tout le dossier de configuration d'IntelliJ
+.idea/
+
+# Ignorer les fichiers de modules spécifiques à l'IDE
+*.iml
